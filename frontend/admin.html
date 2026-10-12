@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | College Event Management System</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/admin" class="brand-logo">
+        <div class="brand-icon" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">🛡️</div>
+        <span>Campus<span style="color: var(--primary);">Pulse</span> <span style="font-size: 0.8rem; font-weight: 700; background: var(--cat-cultural-bg); color: var(--cat-cultural); padding: 0.2rem 0.5rem; border-radius: var(--radius-sm);">ADMIN</span></span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/" class="nav-item">&larr; Student Portal</a></li>
+        <li><a href="/admin" class="nav-item active">Dashboard &amp; Events</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+
+        <div id="nav-user-menu" class="user-menu" style="display: flex;">
+          <div id="nav-user-avatar" class="user-avatar" style="background-color: var(--danger);">A</div>
+          <span id="nav-user-name">Event Admin</span>
+          <button class="btn btn-outline btn-sm" onclick="Auth.handleLogout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Admin Auth Gate (Shown if not logged in as Admin) -->
+  <div id="admin-auth-gate" style="display: none; min-height: 80vh; align-items: center; justify-content: center; padding: 2rem;">
+    <div class="modal-content" style="box-shadow: var(--shadow-lg); transform: none;">
+      <div class="modal-header">
+        <h3 class="modal-title">🔐 Administrator Login</h3>
+      </div>
+      <form onsubmit="Admin.handleAdminLogin(event)">
+        <div class="modal-body">
+          <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            Please log in with administrator credentials to manage campus events, view student attendance records, and access analytics.
+          </p>
+          <div id="admin-gate-error" style="display: none; background: var(--danger-light); color: var(--danger); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+          <div class="form-group">
+            <label class="form-label">Administrator Email</label>
+            <input type="email" id="admin-gate-email" class="form-input" value="admin@college.edu" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="admin-gate-password" class="form-input" value="AdminPassword123!" required>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 0.75rem; border-radius: var(--radius-sm);">
+            <strong>Default Seed Admin:</strong><br>
+            • Email: <code>admin@college.edu</code><br>
+            • Password: <code>AdminPassword123!</code>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <a href="/" class="btn btn-outline">Back to Public Site</a>
+          <button type="submit" class="btn btn-primary">Sign In as Admin</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main Admin Dashboard Content -->
+  <main id="admin-main-content" class="admin-container">
+    <div class="admin-header">
+      <div>
+        <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em;">Event Administration &amp; Analytics</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Monitor platform metrics, manage college event schedules, and track registrations.</p>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="Admin.openCreateEventModal()">
+          <span>➕</span> Create New Event
+        </button>
+      </div>
+    </div>
+
+    <!-- Metrics Cards Grid -->
+    <div class="admin-metrics-grid">
+      <div class="stat-card">
+        <div class="stat-icon blue">📅</div>
+        <div>
+          <div id="stat-total-events" class="stat-value">0</div>
+          <div class="stat-label">Total Events</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green">⏳</div>
+        <div>
+          <div id="stat-upcoming-events" class="stat-value">0</div>
+          <div class="stat-label">Active / Upcoming</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon pink">🎓</div>
+        <div>
+          <div id="stat-total-students" class="stat-value">0</div>
+          <div class="stat-label">Registered Students</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon amber">🎟️</div>
+        <div>
+          <div id="stat-total-registrations" class="stat-value">0</div>
+          <div class="stat-label">Event Signups</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Charts -->
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">📊 Registrations by Category</h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Real-time breakdown</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3 class="chart-title">🔥 Top Registered Events</h3>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Highest student interest</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="popularityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Management Table -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h3 style="font-size: 1.25rem; font-weight: 700;">College Events Roster</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted);">Manage events, update details, or view registered attendees.</p>
+        </div>
+        <div style="max-width: 300px; width: 100%;">
+          <input type="text" id="admin-table-search" class="form-input" placeholder="Filter events list..." style="padding: 0.45rem 0.75rem;">
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Event Title</th>
+              <th>Category</th>
+              <th>Date &amp; Time</th>
+              <th>Venue</th>
+              <th>Capacity &amp; Reg.</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="events-table-body">
+            <!-- Dynamic rows injected by admin.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Create / Edit Event Modal -->
+  <div id="event-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 id="event-modal-title" class="modal-title">Create New College Event</h3>
+        <button class="modal-close" onclick="Admin.closeEventModal()">&times;</button>
+      </div>
+      <form id="event-form">
+        <div class="modal-body">
+          <div id="event-error" style="display: none; background: var(--danger-light); color: var(--danger); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+          <div class="form-group">
+            <label class="form-label" for="ev-title">Event Title *</label>
+            <input type="text" id="ev-title" class="form-input" placeholder="e.g. Annual Tech Symposium 2026" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="ev-category">Category *</label>
+              <select id="ev-category" class="form-select" required>
+                <option value="Technical">Technical</option>
+                <option value="Cultural">Cultural</option>
+                <option value="Sports">Sports</option>
+                <option value="Workshops">Workshops</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ev-capacity">Max Capacity (Seats) *</label>
+              <input type="number" id="ev-capacity" class="form-input" min="1" value="50" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ev-desc">Description *</label>
+            <textarea id="ev-desc" class="form-textarea" rows="3" placeholder="Provide complete details about event objectives, guidelines, and agenda..." required></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="ev-date">Event Date *</label>
+              <input type="date" id="ev-date" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ev-time">Event Time *</label>
+              <input type="time" id="ev-time" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ev-venue">Campus Venue *</label>
+            <input type="text" id="ev-venue" class="form-input" placeholder="e.g. Main Auditorium / Lab 3 / Indoor Stadium" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="ev-deadline">Registration Deadline (Optional)</label>
+              <input type="date" id="ev-deadline" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="ev-contact">Organizer Contact</label>
+              <input type="text" id="ev-contact" class="form-input" placeholder="e.g. club@college.edu | +91 98765 43210">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="ev-banner">Banner Image URL (Optional)</label>
+            <input type="url" id="ev-banner" class="form-input" placeholder="https://images.unsplash.com/...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="Admin.closeEventModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Attendees Modal -->
+  <div id="attendees-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 780px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">👥 Registered Students</h3>
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+            Event: <strong id="attendees-event-title" style="color: var(--text-main);"></strong> &bull;
+            <span id="attendees-count-badge" class="event-count-badge">0 Registered</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="Admin.closeAttendeesModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>Roll Number</th>
+                <th>Department</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody id="attendees-list-body">
+              <!-- Injected by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="Admin.printAttendance()">🖨️ Print / Export Attendance</button>
+        <button class="btn btn-primary" onclick="Admin.closeAttendeesModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div>
+        <strong>College Event Management System</strong> &bull; Admin Operations
+      </div>
+      <div>
+        <a href="/" style="color: var(--primary); font-weight: 600;">&larr; Switch to Student View</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

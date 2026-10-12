@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>College Event Management System | Discover & Register</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="/" class="brand-logo">
+        <div class="brand-icon">🎓</div>
+        <span>Campus<span style="color: var(--primary);">Pulse</span></span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/" class="nav-item active">Browse Events</a></li>
+        <li id="nav-admin-link" style="display: none;"><a href="/admin" class="nav-item">Admin Dashboard</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme">🌙</button>
+
+        <!-- Unauthenticated View -->
+        <div id="nav-auth-actions" style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-outline btn-sm" onclick="Auth.showLoginModal()">Sign In</button>
+          <button class="btn btn-primary btn-sm" onclick="Auth.showRegisterModal()">Student Sign Up</button>
+        </div>
+
+        <!-- Authenticated View -->
+        <div id="nav-user-menu" class="user-menu" style="display: none;">
+          <div id="nav-user-avatar" class="user-avatar">U</div>
+          <span id="nav-user-name">User</span>
+          <span id="nav-user-role" class="btn-sm btn-outline">STUDENT</span>
+          <button id="btn-my-registrations" class="btn btn-outline btn-sm" style="padding: 0.25rem 0.6rem; font-size: 0.78rem;">My Events</button>
+          <button class="btn btn-outline btn-sm" style="padding: 0.25rem 0.5rem;" onclick="Auth.handleLogout()" title="Log out">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">⚡ Official Campus Events Portal</div>
+      <h1>Explore, Connect &amp; <span>Never Miss Out</span></h1>
+      <p>Discover hackathons, cultural festivals, sports championships, and skill-building workshops hosted across our college campus.</p>
+    </div>
+  </header>
+
+  <!-- Search & Filter Bar -->
+  <section class="filter-bar">
+    <div class="filter-container">
+      <div class="search-input-group">
+        <span>🔍</span>
+        <input type="text" id="search-input" placeholder="Search by title, description, or campus venue..." autocomplete="off">
+      </div>
+
+      <div class="category-pills">
+        <button class="cat-pill active" data-category="All">All Categories</button>
+        <button class="cat-pill" data-category="Technical">💻 Technical</button>
+        <button class="cat-pill" data-category="Cultural">🎭 Cultural</button>
+        <button class="cat-pill" data-category="Sports">🏆 Sports</button>
+        <button class="cat-pill" data-category="Workshops">🛠️ Workshops</button>
+      </div>
+
+      <div class="filter-extras">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="status-filter" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Timeline:</label>
+          <select id="status-filter" class="filter-select">
+            <option value="all">All Events</option>
+            <option value="upcoming">Upcoming Events</option>
+            <option value="past">Past Events</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+          <label for="sort-filter" style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Sort By:</label>
+          <select id="sort-filter" class="filter-select">
+            <option value="date_asc">Event Date (Earliest)</option>
+            <option value="date_desc">Event Date (Latest)</option>
+            <option value="popularity">Most Popular</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Events Grid Section -->
+  <main class="events-section">
+    <div class="section-header">
+      <h2 class="section-title">
+        Campus Events <span id="event-count-badge" class="event-count-badge">0 Events</span>
+      </h2>
+      <div>
+        <a href="/admin" class="btn btn-outline btn-sm">Admin Portal &rarr;</a>
+      </div>
+    </div>
+
+    <div id="events-grid" class="events-grid">
+      <!-- Dynamic Event Cards will be injected here by app.js -->
+    </div>
+  </main>
+
+  <!-- Login Modal -->
+  <div id="login-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Sign In to CampusPulse</h3>
+        <button class="modal-close" onclick="Auth.hideLoginModal()">&times;</button>
+      </div>
+      <form id="login-form">
+        <div class="modal-body">
+          <div id="login-error" style="display: none; background: var(--danger-light); color: var(--danger); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+          
+          <div class="form-group">
+            <label class="form-label" for="login-email">College Email Address</label>
+            <input type="email" id="login-email" class="form-input" placeholder="e.g. student@college.edu" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); background: var(--bg-input); padding: 0.75rem; border-radius: var(--radius-sm);">
+            <strong>Demo Accounts:</strong><br>
+            • Student: <code>student@college.edu</code> / <code>StudentPassword123!</code><br>
+            • Admin: <code>admin@college.edu</code> / <code>AdminPassword123!</code>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: auto;">
+            Need an account? <a href="#" id="switch-to-register" style="color: var(--primary); font-weight: 600;">Sign Up</a>
+          </span>
+          <button type="button" class="btn btn-outline" onclick="Auth.hideLoginModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Sign In</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Student Registration Modal -->
+  <div id="register-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Student Registration</h3>
+        <button class="modal-close" onclick="Auth.hideRegisterModal()">&times;</button>
+      </div>
+      <form id="register-form">
+        <div class="modal-body">
+          <div id="register-error" style="display: none; background: var(--danger-light); color: var(--danger); padding: 0.75rem; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 1rem;"></div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" class="form-input" placeholder="e.g. Alex Rivera" required minlength="2">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="reg-email">Email Address</label>
+              <input type="email" id="reg-email" class="form-input" placeholder="alex@college.edu" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-roll">Roll / Registration No.</label>
+              <input type="text" id="reg-roll" class="form-input" placeholder="e.g. CS2026-042" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="reg-dept">Department</label>
+              <select id="reg-dept" class="form-select">
+                <option value="Computer Science">Computer Science &amp; Eng.</option>
+                <option value="Electronics & Comm.">Electronics &amp; Comm.</option>
+                <option value="Mechanical Eng.">Mechanical Engineering</option>
+                <option value="Information Tech.">Information Technology</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="Business Administration">Business Administration</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="reg-sem">Semester</label>
+              <select id="reg-sem" class="form-select">
+                <option value="1st Semester">1st Semester</option>
+                <option value="2nd Semester">2nd Semester</option>
+                <option value="3rd Semester">3rd Semester</option>
+                <option value="4th Semester">4th Semester</option>
+                <option value="5th Semester">5th Semester</option>
+                <option value="6th Semester" selected>6th Semester</option>
+                <option value="7th Semester">7th Semester</option>
+                <option value="8th Semester">8th Semester</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="reg-password">Password</label>
+            <input type="password" id="reg-password" class="form-input" placeholder="At least 6 characters" required minlength="6">
+            <div class="form-helper">Passwords are securely hashed before storage.</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: auto;">
+            Already registered? <a href="#" id="switch-to-login" style="color: var(--primary); font-weight: 600;">Sign In</a>
+          </span>
+          <button type="button" class="btn btn-outline" onclick="Auth.hideRegisterModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Student Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Event Details Modal -->
+  <div id="details-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="details-title" class="modal-title">Event Details</h3>
+        <button class="modal-close" onclick="App.closeDetailsModal()">&times;</button>
+      </div>
+      <div id="details-body" class="modal-body">
+        <!-- Injected via app.js -->
+      </div>
+      <div id="details-footer" class="modal-footer">
+        <!-- Injected via app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- My Registrations Modal -->
+  <div id="my-regs-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 650px;">
+      <div class="modal-header">
+        <h3 class="modal-title">My Registered Events</h3>
+        <button class="modal-close" onclick="App.closeMyRegistrationsModal()">&times;</button>
+      </div>
+      <div id="my-regs-list" class="modal-body">
+        <!-- Injected via app.js -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="App.closeMyRegistrationsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div>
+        <strong>College Event Management System</strong> &bull; Open Source Software (OSS) Mini Project
+      </div>
+      <div style="display: flex; gap: 1rem; align-items: center;">
+        <span>Licensed under MIT</span>
+        <span>&bull;</span>
+        <a href="/admin" style="color: var(--primary); font-weight: 600;">Admin Dashboard</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
